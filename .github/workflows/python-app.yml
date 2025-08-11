@@ -6,9 +6,6 @@ on:
   pull_request:
     branches: [ "master" ]
 
-permissions:
-  contents: read
-
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,20 +16,18 @@ jobs:
     - uses: actions/setup-python@v5
       with:
         python-version: '3.12'
-        cache: 'pip'
+    
+    - name: Install uv
+      run: pip install uv
     
     - name: Install dependencies
       run: |
-        python -m pip install --upgrade pip
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        uv pip install --upgrade pip
+        uv pip install "git+https://github.com/nigredon1991/tmp-uv-proj.git"
+        uv pip install -r requirements.txt  
     
-    - name: Lint with flake8
+    - name: Lint and test
       run: |
-        # stop the build if there are Python syntax errors or undefined names
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
-    
-    - name: Test with pytest
-      run: |
         pytest
