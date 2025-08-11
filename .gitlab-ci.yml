@@ -1,0 +1,62 @@
+---
+
+variables:
+  SVN_PATH: https://hius.aqua/svn/trunk/DevOps/wanflex_func_test
+
+include: 'ci_scripts/update_svn.yml'
+include: '.github/build-image-ci.yaml'
+
+.default_rules:
+  rules:
+    - if: $CI_COMMIT_MESSAGE =~ /WIP/
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      when: never
+    - if: $CI_PIPELINE_SOURCE == "trigger"
+      when: always
+    - if: $CI_PIPELINE_SOURCE == "push"
+      when: always
+    - if: $CI_PIPELINE_SOURCE == "schedule"
+      when: always
+
+stages:
+  - build-image
+  - generate_docs
+  - tests
+  - slack
+
+generate_docs:
+  stage: generate_docs
+  tags:
+    - generate_docs
+  script:
+    - export
+    - ./ci_scripts/generate_docs.sh
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "push" && $CI_COMMIT_REF_NAME == "master"
+  artifacts:
+    reports:
+      dotenv: build.env
+
+tests:
+   stage: tests
+   tags:
+     - ci_pc
+   script:
+     - export
+     - ./ci_scripts/run_on_master.sh
+   artifacts:
+     when: always
+     paths:
+       - ./public
+     expire_in: 201 weeks
+   rules:
+     - !reference [.default_rules, rules]
+
+slack_message:
+  stage: slack
+  image: $IMAGE_CI:latest
+  script:
+    - ./ci_scripts/msg_slack.sh
+  rules:
+    - !reference [.default_rules, rules]
