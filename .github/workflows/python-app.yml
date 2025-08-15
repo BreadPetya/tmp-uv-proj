@@ -20,14 +20,22 @@ jobs:
     - name: Install uv
       run: pip install uv
     
+    - name: Create and activate virtual environment
+      run: |
+        uv venv .venv
+        source .venv/bin/activate
+        python -V  # Проверка версии Python
+    
     - name: Install dependencies
       run: |
+        source .venv/bin/activate
         uv pip install --upgrade pip
         uv pip install "git+https://github.com/BreadPetya/tmp-uv-proj.git"
-        uv pip install -r requirements.txt  
+        uv pip install -r requirements.txt
     
     - name: Lint and test
       run: |
+        source .venv/bin/activate
         flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
         flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
         pytest
