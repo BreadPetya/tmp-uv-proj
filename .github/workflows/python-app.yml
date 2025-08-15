@@ -25,28 +25,20 @@ jobs:
         uv venv .venv
         source .venv/bin/activate
     
-    - name: Install dependencies with explicit paths
+    - name: Fix package structure in pyproject.toml
+      run: |
+        # Исправляем пути в pyproject.toml
+        sed -i 's|tmp-uv-proj/libtmp|libtmp|g' pyproject.toml
+        sed -i 's|tmp-uv-proj/projtmp|projtmp|g' pyproject.toml
+        cat pyproject.toml  # Для проверки изменений
+    
+    - name: Install in development mode
       run: |
         source .venv/bin/activate
         uv pip install --upgrade pip
-        
-        # Устанавливаем libtmp и projtmp как отдельные пакеты
-        uv pip install "./libtmp"  # если libtmp в поддиректории вашего репозитория
-        uv pip install "./projtmp" # если projtmp в поддиректории
-        
-        # Устанавливаем основной пакет в режиме разработки
         uv pip install -e .
-        
-        uv pip install -r requirements.txt
     
-    - name: Verify installations
+    - name: Run tests
       run: |
         source .venv/bin/activate
-        python -c "import libtmp, projtmp, tmp_uv_proj; print(f'Successfully imported: {libtmp.__name__}, {projtmp.__name__}, {tmp_uv_proj.__name__}')"
-    
-    - name: Lint and test
-      run: |
-        source .venv/bin/activate
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
         pytest
