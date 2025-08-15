@@ -17,35 +17,34 @@ jobs:
       with:
         python-version: '3.12'
     
-    - name: Install dependencies
+    - name: Install build tools
       run: |
         python -m pip install --upgrade pip
-        pip install uv build
+        pip install uv build wheel
     
-    - name: Create virtual environment
-      run: python -m venv .venv
-    
-    - name: Prepare environment
+    - name: Fix project structure
       run: |
-        . .venv/bin/activate
-        python -m pip install -e .
+        # Создаем правильную структуру пакета
+        mkdir -p src/tmp_uv_proj
+        mv libtmp projtmp tmp-uv-proj/* src/tmp_uv_proj/ 2>/dev/null || true
+        
+        # Исправляем pyproject.toml
+        cat << EOF > pyproject.toml
+        [build-system]
+        requires = ["setuptools>=65.0.0", "wheel"]
+        build-backend = "setuptools.build_meta"
+
+        [project]
+        name = "tmp-uv-proj"
+        version = "0.1.0"
+        packages = {find = {}}
+        EOF
     
-    - name: Fix package paths
+    - name: Build and install
       run: |
-        . .venv/bin/activate
-        # Безопасное редактирование pyproject.toml
-        if [ -f pyproject.toml ]; then
-          sed -i.bak 's|tmp-uv-proj/libtmp|libtmp|g' pyproject.toml
-          sed -i.bak 's|tmp-uv-proj/projtmp|projtmp|g' pyproject.toml
-          rm -f pyproject.toml.bak
-        fi
-    
-    - name: Install project
-      run: |
-        . .venv/bin/activate
-        python -m pip install -e .
+        python -m build --wheel
+        uv pip install dist/*.whl
     
     - name: Run tests
       run: |
-        . .venv/bin/activate
-        pytest tests/
+        python -m pytest
