@@ -2,9 +2,9 @@ name: Python application
 
 on:
   push:
-    branches: [ "master" ]
+    branches: ["master"]
   pull_request:
-    branches: [ "master" ]
+    branches: ["master"]
 
 jobs:
   build:
@@ -24,14 +24,20 @@ jobs:
       run: |
         uv venv .venv
         source .venv/bin/activate
-        python -V  # Проверка версии Python
     
-    - name: Install dependencies
+    - name: Install core dependencies
       run: |
         source .venv/bin/activate
         uv pip install --upgrade pip
-        uv pip install "git+https://github.com/BreadPetya/tmp-uv-proj.git"
+        uv pip install "libtmp @ git+https://github.com/BreadPetya/tmp-uv-proj.git#subdirectory=libtmp"
+        uv pip install "projtmp @ git+https://github.com/BreadPetya/tmp-uv-proj.git#subdirectory=projtmp"
+        uv pip install "tmp-uv-proj @ git+https://github.com/BreadPetya/tmp-uv-proj.git"
         uv pip install -r requirements.txt
+    
+    - name: Verify installations
+      run: |
+        source .venv/bin/activate
+        python -c "import libtmp, projtmp, tmp_uv_proj; print(f'Imported: {libtmp.__name__}, {projtmp.__name__}, {tmp_uv_proj.__name__}')"
     
     - name: Lint and test
       run: |
