@@ -23,7 +23,7 @@ jobs:
     - name: Install dependencies
       run: |
         uv pip install --upgrade pip
-        uv pip install "git+https://github.com/nigredon1991/tmp-uv-proj.git"
+        uv pip install "git+https://github.com/BreadPetya/tmp-uv-proj.git"
         uv pip install -r requirements.txt  
     
     - name: Lint and test
