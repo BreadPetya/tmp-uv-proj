@@ -17,29 +17,30 @@ jobs:
       with:
         python-version: '3.12'
     
-    - name: Install build tools
-      run: pip install uv setuptools wheel
+    - name: Install uv and dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install uv
     
-    - name: Create virtual environment
-      run: uv venv .venv
+    - name: Create and activate virtual environment
+      run: |
+        python -m venv .venv
+        source .venv/bin/activate
+        python -V
     
-    - name: Install project with corrected paths
+    - name: Fix package paths
       run: |
         source .venv/bin/activate
-        # Временно исправляем pyproject.toml
-        sed -i 's|tmp-uv-proj/libtmp|libtmp|g' pyproject.toml  true
-        sed -i 's|tmp-uv-proj/projtmp|projtmp|g' pyproject.toml  true
-        
-        # Устанавливаем проект в режиме разработки
+        || true который вызывал ошибку
+        sed -i 's|tmp-uv-proj/libtmp|libtmp|g' pyproject.toml
+        sed -i 's|tmp-uv-proj/projtmp|projtmp|g' pyproject.toml
+    
+    - name: Install project
+      run: |
+        source .venv/bin/activate
         uv pip install -e .
-        
-        # Проверяем установку
-        python -c "import libtmp, projtmp; print('Imports successful')"
     
     - name: Run tests
       run: |
         source .venv/bin/activate
-        # Создаем минимальный тест, если нужно
-        mkdir -p tests
-        echo "def test_example(): assert True" > tests/test_example.py
-        pytest tests/
+        pytest
