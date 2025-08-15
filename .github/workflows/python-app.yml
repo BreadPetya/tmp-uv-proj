@@ -25,19 +25,24 @@ jobs:
         uv venv .venv
         source .venv/bin/activate
     
-    - name: Install core dependencies
+    - name: Install dependencies with explicit paths
       run: |
         source .venv/bin/activate
         uv pip install --upgrade pip
-        uv pip install "libtmp @ git+https://github.com/BreadPetya/tmp-uv-proj.git#subdirectory=libtmp"
-        uv pip install "projtmp @ git+https://github.com/BreadPetya/tmp-uv-proj.git#subdirectory=projtmp"
-        uv pip install "tmp-uv-proj @ git+https://github.com/BreadPetya/tmp-uv-proj.git"
+        
+        # Устанавливаем libtmp и projtmp как отдельные пакеты
+        uv pip install "./libtmp"  # если libtmp в поддиректории вашего репозитория
+        uv pip install "./projtmp" # если projtmp в поддиректории
+        
+        # Устанавливаем основной пакет в режиме разработки
+        uv pip install -e .
+        
         uv pip install -r requirements.txt
     
     - name: Verify installations
       run: |
         source .venv/bin/activate
-        python -c "import libtmp, projtmp, tmp_uv_proj; print(f'Imported: {libtmp.__name__}, {projtmp.__name__}, {tmp_uv_proj.__name__}')"
+        python -c "import libtmp, projtmp, tmp_uv_proj; print(f'Successfully imported: {libtmp.__name__}, {projtmp.__name__}, {tmp_uv_proj.__name__}')"
     
     - name: Lint and test
       run: |
